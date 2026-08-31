@@ -1,0 +1,37 @@
+# ============================================================
+# FILE: configs/train_defaults.yaml
+#
+# PURPOSE:
+# Reference sheet of the training defaults used by train.py,
+# plus the recommended server presets. train.py's CLI flags
+# always take priority — this file documents the choices so
+# the team trains consistently.
+#
+# NOTES:
+# - Start with yolov8n (fastest) to validate the dataset,
+#   then train yolov8s / yolov5su for the accuracy run.
+# - Raise batch until the GPU is nearly full; if you hit
+#   CUDA out-of-memory, halve it.
+# ============================================================
+
+# ---- Quick dataset validation run --------------------------
+quick_check:
+  model: yolov8n.pt
+  epochs: 25
+  batch: 16
+  imgsz: 640
+
+# ---- Full training run (company server GPU) -----------------
+server_full:
+  model: yolov8s.pt      # or yolov5su.pt for the v5 family
+  epochs: 150
+  batch: 32
+  imgsz: 640
+  patience: 30
+
+# ---- Edge-focused run (final Raspberry Pi deployment) -------
+edge:
+  model: yolov8n.pt      # nano stays real-time on Pi CPU
+  epochs: 150
+  batch: 32
+  imgsz: 640

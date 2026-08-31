@@ -1,0 +1,38 @@
+# ============================================================
+# FILE: configs/data.yaml
+#
+# PURPOSE:
+# Dataset configuration consumed by Ultralytics during
+# training (train.py --data configs/data.yaml).
+#
+# RESPONSIBILITIES:
+# - Point to the train/val (and optional test) image folders.
+# - Define the class list — order defines the class IDs used
+#   in every label file.
+#
+# NOTES:
+# - "path" is relative to THIS repo root; on the company
+#   server you can replace it with an absolute path to a
+#   shared dataset location instead of copying data into
+#   the repo.
+# - CLASS ORDER MATTERS: it must match the IDs used in the
+#   label .txt files. Do not reorder after labeling.
+# - These class names feed PoolGuard's detector.py mapping:
+#     drowning            -> DROWNING  (triggers rescue)
+#     swimming            -> SWIMMING
+#     person_out_of_water -> PERSON_DETECTED
+# ============================================================
+
+# Dataset root (relative to the repo).
+path: ./datasets
+
+# Image folders relative to "path".
+train: images/train
+val: images/val
+# test: images/test        # optional — uncomment if you have one
+
+# Class IDs and names (ID = position in this list).
+names:
+  0: drowning
+  1: swimming
+  2: person_out_of_water

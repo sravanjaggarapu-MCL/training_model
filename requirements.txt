@@ -1,0 +1,24 @@
+# ============================================================
+# FILE: requirements.txt
+#
+# PURPOSE:
+# Python dependencies for training the PoolGuard drowning-
+# detection YOLO model.
+#
+# INSTALL:
+#   pip install -r requirements.txt
+#
+# NOTE (company GPU servers):
+# ultralytics pulls in PyTorch automatically. If the server
+# needs a specific CUDA build of torch, install torch FIRST
+# following https://pytorch.org/get-started/locally/ and
+# then run this file — pip will keep the existing torch.
+# ============================================================
+
+# YOLO training/inference framework (YOLOv5u + YOLOv8 family).
+ultralytics>=8.2
+
+# Explicit pins of libraries the utils/ scripts use directly
+# (also installed by ultralytics, listed here for clarity).
+opencv-python
+PyYAML

@@ -1,0 +1,23 @@
+# ---- Data & artifacts (never in git) ----
+datasets/*
+!datasets/.gitkeep
+!datasets/README.md
+models/*
+!models/.gitkeep
+!models/README.md
+weights/*
+!weights/.gitkeep
+!weights/README.md
+runs/
+
+# ---- Python ----
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# ---- OS / IDE ----
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
