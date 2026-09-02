@@ -256,6 +256,31 @@ def main() -> None:
     # --weights (pipeline dialect) wins over --model when given.
     base_checkpoint = args.weights if args.weights else args.model
  
+    # ------------------------------------------------------------
+    # MISSING-CHECKPOINT SAFETY NET
+    # ------------------------------------------------------------
+    # The pipeline builds the cold-start path as <repo>/<weights_
+    # variant>.pt. If the config's variant name doesn't match any
+    # committed file, don't crash the run: fall back to any .pt in
+    # the repo root, else to an auto-downloaded pretrained base.
+    # ------------------------------------------------------------
+    ckpt_path = Path(base_checkpoint)
+    if not ckpt_path.is_file() and ckpt_path.suffix == ".pt":
+        candidates = sorted(ROOT.glob("*.pt"))
+        if candidates:
+            print(f"[warn] base checkpoint not found: {ckpt_path}")
+            print(f"[warn] falling back to repo checkpoint: "
+                  f"{candidates[0]} (fix weights_variant in the "
+                  f"pipeline config to silence this)")
+            base_checkpoint = str(candidates[0])
+        else:
+            print(f"[warn] base checkpoint not found: {ckpt_path} "
+                  f"and no .pt in {ROOT}")
+            print("[warn] falling back to auto-downloaded "
+                  "'yolov8n.pt' pretrained base (fix "
+                  "weights_variant in the pipeline config)")
+            base_checkpoint = "yolov8n.pt"
+ 
     data_config = Path(args.data).resolve()
     using_default_config = (
         data_config == DEFAULT_DATA_CONFIG.resolve()
