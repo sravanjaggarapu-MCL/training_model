@@ -85,6 +85,59 @@ def preflight(data_config: Path, using_default_config: bool) -> None:
  
  
 # ============================================================
+# PLATFORM CONTRACT FIXUPS (from the TrainX repo skeleton)
+# ============================================================
+# The TrainX acceptance gate reads the LAST row of results.csv
+# using classic YOLOv5 column names. Ultralytics writes
+# (B)-suffixed names, so the gate would see no metrics at all.
+# ============================================================
+ 
+RESULTS_CSV_COLUMN_MAP = {
+    "metrics/precision(B)": "metrics/precision",
+    "metrics/recall(B)": "metrics/recall",
+    "metrics/mAP50(B)": "metrics/mAP_0.5",
+    "metrics/mAP50-95(B)": "metrics/mAP_0.5:0.95",
+}
+ 
+ 
+def rewrite_results_csv(run_dir: Path) -> None:
+    """Rewrite ultralytics' results.csv header into YOLOv5 column
+    names, in place, so the TrainX acceptance gate and MLflow
+    logging can read the metrics."""
+    import csv
+ 
+    path = run_dir / "results.csv"
+    if not path.is_file():
+        print(f"[warn] {path} not found; acceptance gate will "
+              "see no metrics")
+        return
+    with open(path, newline="") as f:
+        rows = list(csv.reader(f))
+    if not rows:
+        return
+    header = [RESULTS_CSV_COLUMN_MAP.get(c.strip(), c.strip())
+              for c in rows[0]]
+    body = [[c.strip() for c in r] for r in rows[1:]]
+    with open(path, "w", newline="") as f:
+        w = csv.writer(f)
+        w.writerow(header)
+        w.writerows(body)
+    print(f"[train] rewrote {path} header into YOLOv5 column names")
+ 
+ 
+def ensure_best_pt(run_dir: Path) -> None:
+    """The pipeline requires weights/best.pt. In edge cases
+    ultralytics writes only last.pt; copying it is the honest
+    equivalent (it IS the final checkpoint)."""
+    weights_dir = run_dir / "weights"
+    best = weights_dir / "best.pt"
+    last = weights_dir / "last.pt"
+    if not best.is_file() and last.is_file():
+        shutil.copy2(last, best)
+        print(f"[train] best.pt was missing; copied last.pt -> {best}")
+ 
+ 
+# ============================================================
 # TRAINING
 # ============================================================
  
@@ -239,6 +292,11 @@ def main() -> None:
         seed=args.seed,
         exist_ok=args.exist_ok,
     )
+ 
+    # Platform contract fixups (results.csv columns + best.pt)
+    run_dir = Path(results.save_dir)
+    rewrite_results_csv(run_dir)
+    ensure_best_pt(run_dir)
  
     # --------------------------------------------------------
     # EXPORT THE BEST CHECKPOINT
